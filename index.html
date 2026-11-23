@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nexa AI Studio | AI agents console</title>
+<meta name="description" content="Demo console to build, test and monitor AI agents with RAG: agents, playground, knowledge base, usage and cost.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/kit.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<div class="demo-bar">Demo system built by <a href="https://marcusolive.github.io">Marcus Oliveira</a>. Fictional data, no real AI calls.</div>
+
+<header class="appbar">
+  <button class="burger" aria-label="Open navigation" data-icon="menu"></button>
+  <div class="brand"><span class="logo" data-icon="spark"></span>Nexa <small>AI Studio</small></div>
+  <div class="proj">Workspace: <b>acme-support</b></div>
+  <label class="search"><span data-icon="search"></span><input id="q" placeholder="Search agents, documents, runs" aria-label="Search"><kbd>/</kbd></label>
+  <div class="icons">
+    <button aria-label="Help" data-icon="help"></button>
+    <button aria-label="Notifications" data-icon="bell"><span class="dot"></span></button>
+    <span class="avatar" aria-label="Signed in as Marcus">MO</span>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="side" aria-label="Main">
+    <a data-view="overview" data-icon="home">Overview</a>
+    <a data-view="agents" data-icon="bot">Agents <span class="badge info" id="agentCount"></span></a>
+    <a data-view="playground" data-icon="spark">Playground</a>
+    <a data-view="knowledge" data-icon="doc">Knowledge base</a>
+    <div class="sec">Operations</div>
+    <a data-view="runs" data-icon="clock">Runs & traces</a>
+    <a data-view="usage" data-icon="chart">Usage & cost</a>
+    <div class="sec">Workspace</div>
+    <a data-view="settings" data-icon="settings">Settings</a>
+  </nav>
+
+  <main class="main">
+    <section class="view" id="overview">
+      <div class="crumbs">acme-support / Overview</div>
+      <div class="head"><div><h1>Good morning, Marcus</h1><p>Your agents answered <b id="todayReq">0</b> requests in the last 24 hours.</p></div>
+        <div class="actions"><button class="btn" data-go="playground" data-icon="spark">Open playground</button><button class="btn primary" data-new-agent data-icon="plus">New agent</button></div></div>
+      <div class="grid g4" id="kpis"></div>
+      <div class="grid g21" style="margin-top:16px">
+        <div class="card"><h3>Requests <div class="seg" id="range"><button data-r="7">7d</button><button data-r="30" class="on">30d</button></div></h3><div id="reqChart"></div></div>
+        <div class="card"><h3>Traffic by model</h3><div id="modelDonut"></div></div>
+      </div>
+      <div class="grid g2" style="margin-top:16px">
+        <div class="card"><h3>Recent runs <a href="#runs" data-go="runs" style="font-size:13px;font-weight:500">View all</a></h3><div class="list" id="recentRuns"></div></div>
+        <div class="card"><h3>Health checks <small>updated every 30s</small></h3><div class="list" id="health"></div></div>
+      </div>
+    </section>
+
+    <section class="view" id="agents">
+      <div class="crumbs">acme-support / Agents</div>
+      <div class="head"><div><h1>Agents</h1><p>Each agent has a model, a knowledge base and guardrails.</p></div><button class="btn primary" data-new-agent data-icon="plus">New agent</button></div>
+      <div class="card" id="agentsTable"></div>
+    </section>
+
+    <section class="view" id="playground">
+      <div class="crumbs">acme-support / Playground</div>
+      <div class="head"><div><h1>Playground</h1><p>Answers come only from the knowledge base and always cite the source.</p></div>
+        <label class="actions">Agent <select id="pgAgent" class="btn" style="color:var(--ink);font-weight:500"></select></label></div>
+      <div class="grid g21">
+        <div class="card chatcard"><div id="chat" class="chat" aria-live="polite"></div>
+          <form id="ask" class="ask"><input id="askInput" placeholder="Ask something, e.g. What is the refund deadline?" aria-label="Message" autocomplete="off"><button class="btn primary" data-icon="spark">Send</button></form>
+          <div class="chips" id="suggest"></div></div>
+        <div class="card"><h3>Trace</h3><div id="trace" class="trace"><p class="empty">Send a message to see the retrieval and model steps.</p></div></div>
+      </div>
+    </section>
+
+    <section class="view" id="knowledge">
+      <div class="crumbs">acme-support / Knowledge base</div>
+      <div class="head"><div><h1>Knowledge base</h1><p>Documents are split into chunks, embedded and indexed for retrieval.</p></div><button class="btn primary" id="upload" data-icon="plus">Add document</button></div>
+      <div class="grid g4" id="kbStats"></div>
+      <div class="card" style="margin-top:16px" id="docsTable"></div>
+    </section>
+
+    <section class="view" id="runs">
+      <div class="crumbs">acme-support / Runs & traces</div>
+      <div class="head"><div><h1>Runs & traces</h1><p>Every request is logged with latency, tokens, cost and the sources used.</p></div><button class="btn" id="export" data-icon="download">Export CSV</button></div>
+      <div class="card" id="runsTable"></div>
+    </section>
+
+    <section class="view" id="usage">
+      <div class="crumbs">acme-support / Usage & cost</div>
+      <div class="head"><div><h1>Usage & cost</h1><p>Monthly budget, daily spend and cost per agent.</p></div></div>
+      <div class="grid g3" id="budget"></div>
+      <div class="grid g21" style="margin-top:16px">
+        <div class="card"><h3>Daily cost <small>USD</small></h3><div id="costBars"></div></div>
+        <div class="card"><h3>Cost per agent</h3><div class="list" id="costAgents"></div></div>
+      </div>
+    </section>
+
+    <section class="view" id="settings">
+      <div class="crumbs">acme-support / Settings</div>
+      <div class="head"><div><h1>Settings</h1><p>Keys, guardrails and data policy.</p></div></div>
+      <div class="grid g2">
+        <div class="card"><h3>API keys</h3><div class="list" id="keys"></div><button class="btn" id="newKey" style="margin-top:12px" data-icon="plus">Create key</button></div>
+        <div class="card"><h3>Guardrails & privacy</h3><div class="list" id="toggles"></div></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="assets/js/kit.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
